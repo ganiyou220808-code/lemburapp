@@ -1,0 +1,1194 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LemburApp</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0a0c10;--s1:#13161d;--s2:#1a1e28;--s3:#222737;--border:#2c3144;
+  --accent:#3b82f6;--accent2:#6366f1;--green:#10b981;--red:#ef4444;
+  --yellow:#f59e0b;--text:#e2e8f0;--muted:#64748b;--muted2:#94a3b8;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+
+/* SETUP */
+#setup-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;
+  background:radial-gradient(ellipse 70% 50% at 30% 0%,rgba(59,130,246,.12) 0%,transparent 60%),
+             radial-gradient(ellipse 50% 40% at 80% 100%,rgba(99,102,241,.1) 0%,transparent 60%),var(--bg)}
+.setup-card{width:100%;max-width:480px;background:var(--s1);border:1px solid var(--border);border-radius:20px;padding:36px;animation:fadeUp .5s ease}
+.logo-row{display:flex;align-items:center;gap:12px;margin-bottom:28px}
+.logo-box{width:42px;height:42px;background:linear-gradient(135deg,var(--accent),var(--accent2));border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.logo-row h1{font-size:20px;font-weight:700;letter-spacing:-.5px}
+.logo-row p{font-size:12px;color:var(--muted2)}
+.step{display:none}.step.active{display:block;animation:fadeUp .3s ease}
+.step-badge{display:inline-flex;align-items:center;gap:7px;font-size:11px;font-weight:600;color:var(--muted);background:var(--s2);padding:5px 11px;border-radius:20px;border:1px solid var(--border);margin-bottom:18px}
+.sdot{width:18px;height:18px;border-radius:50%;background:var(--accent);color:#fff;font-size:10px;display:flex;align-items:center;justify-content:center;font-weight:700}
+.step-title{font-size:21px;font-weight:700;margin-bottom:6px}
+.step-sub{font-size:13px;color:var(--muted2);margin-bottom:22px;line-height:1.65}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:11px;font-weight:600;color:var(--muted2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:7px}
+.field input,.field select{width:100%;background:var(--s2);border:1px solid var(--border);border-radius:10px;padding:12px 15px;color:var(--text);font-family:inherit;font-size:14px;outline:none;transition:border-color .2s}
+.field input:focus,.field select:focus{border-color:var(--accent)}
+.btn-main{width:100%;padding:13px;border-radius:10px;border:none;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;transition:all .2s}
+.btn-main:hover{opacity:.9;transform:translateY(-1px);box-shadow:0 8px 24px rgba(59,130,246,.3)}
+.btn-main:disabled{opacity:.5;cursor:not-allowed;transform:none}
+.info-box{margin-top:18px;padding:15px;background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.18);border-radius:10px;font-size:12.5px;color:var(--muted2);line-height:1.75}
+.info-box strong{color:var(--text);font-weight:600}
+.info-box code{background:var(--s3);padding:2px 6px;border-radius:4px;font-family:'DM Mono',monospace;font-size:11px;color:var(--accent)}
+.warn-box{margin-top:14px;padding:13px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:10px;font-size:12px;color:#fcd34d;line-height:1.65}
+
+/* LOGIN */
+#login-screen{min-height:100vh;display:none;align-items:center;justify-content:center;padding:24px;
+  background:radial-gradient(ellipse 70% 50% at 30% 0%,rgba(59,130,246,.12) 0%,transparent 60%),var(--bg)}
+.login-card{width:100%;max-width:420px;background:var(--s1);border:1px solid var(--border);border-radius:20px;padding:36px;animation:fadeUp .5s ease}
+.form-title{font-size:23px;font-weight:700;margin-bottom:5px}
+.form-sub{font-size:13px;color:var(--muted2);margin-bottom:24px}
+.link{color:var(--accent);text-decoration:none;font-weight:600;cursor:pointer}
+
+/* APP */
+#app{display:none;min-height:100vh;flex-direction:column}
+#app.active{display:flex}
+.topbar{position:sticky;top:0;z-index:100;background:rgba(10,12,16,.9);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:0 20px;height:58px;display:flex;align-items:center;justify-content:space-between}
+.t-left{display:flex;align-items:center;gap:10px}
+.t-logo{font-size:15px;font-weight:700;letter-spacing:-.3px}
+.rbadge{font-size:10px;font-weight:700;padding:3px 9px;border-radius:20px;text-transform:uppercase;letter-spacing:.6px}
+.rb-admin{background:rgba(99,102,241,.2);color:#a5b4fc;border:1px solid rgba(99,102,241,.3)}
+.rb-emp{background:rgba(59,130,246,.2);color:#93c5fd;border:1px solid rgba(59,130,246,.3)}
+.t-right{display:flex;align-items:center;gap:10px;position:relative}
+.notif-btn{position:relative;background:var(--s2);border:1px solid var(--border);border-radius:8px;width:34px;height:34px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px}
+.nbadge{position:absolute;top:-4px;right:-4px;background:var(--red);color:#fff;width:15px;height:15px;border-radius:50%;font-size:9px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.userpill{display:flex;align-items:center;gap:8px;background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:4px 11px 4px 4px;font-size:12.5px;font-weight:500}
+.uavatar{width:26px;height:26px;border-radius:6px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700}
+.logout-btn{background:transparent;border:1px solid var(--border);color:var(--muted2);border-radius:7px;padding:5px 11px;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .2s}
+.logout-btn:hover{border-color:var(--red);color:var(--red)}
+.notif-panel{display:none;position:absolute;top:50px;right:0;width:300px;background:var(--s1);border:1px solid var(--border);border-radius:12px;box-shadow:0 20px 40px rgba(0,0,0,.5);z-index:200;overflow:hidden}
+.notif-panel.open{display:block;animation:fadeUp .2s ease}
+.notif-hdr{padding:11px 15px;border-bottom:1px solid var(--border);font-size:11px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.8px}
+.notif-item{padding:11px 15px;border-bottom:1px solid rgba(44,49,68,.5)}
+.notif-item:last-child{border-bottom:none}
+.ni-title{font-size:12px;font-weight:600;margin-bottom:2px}
+.ni-sub{font-size:11px;color:var(--muted2)}
+.ndot{width:6px;height:6px;background:var(--accent);border-radius:50%;display:inline-block;margin-right:5px}
+
+.nav-tabs{display:flex;gap:2px;padding:10px 20px 0;border-bottom:1px solid var(--border);background:var(--bg);overflow-x:auto}
+.nav-tab{padding:8px 15px;border-radius:8px 8px 0 0;font-size:12px;font-weight:600;cursor:pointer;color:var(--muted);background:transparent;border:none;font-family:inherit;transition:all .2s;position:relative;white-space:nowrap}
+.nav-tab.active{color:var(--text);background:var(--s1)}
+.nav-tab.active::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:2px;background:var(--accent);border-radius:2px 2px 0 0}
+
+.main{flex:1;padding:22px 20px;max-width:1200px;margin:0 auto;width:100%}
+.page{display:none;animation:fadeUp .3s ease}.page.active{display:block}
+.card{background:var(--s1);border:1px solid var(--border);border-radius:14px;padding:20px;margin-bottom:16px}
+.card-title{font-size:14px;font-weight:700;margin-bottom:16px}
+
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:18px}
+.scard{background:var(--s1);border:1px solid var(--border);border-radius:12px;padding:16px}
+.slabel{font-size:11px;color:var(--muted2);font-weight:500;margin-bottom:5px}
+.sval{font-size:24px;font-weight:700;letter-spacing:-1px}
+.c-blue{color:var(--accent)}.c-green{color:var(--green)}.c-yellow{color:var(--yellow)}.c-red{color:var(--red)}
+
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:600px){.form-grid{grid-template-columns:1fr}}
+.ff{grid-column:1/-1}
+.fi label{font-size:11px;font-weight:600;color:var(--muted2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:6px;display:block}
+.fi input,.fi select,.fi textarea{width:100%;background:var(--s2);border:1px solid var(--border);border-radius:9px;padding:10px 12px;color:var(--text);font-family:inherit;font-size:13px;outline:none;transition:border-color .2s;resize:vertical}
+.fi input:focus,.fi select:focus,.fi textarea:focus{border-color:var(--accent)}
+.fi select option{background:var(--s2)}
+.btn-go{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none;border-radius:9px;padding:10px 20px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .2s}
+.btn-go:hover{opacity:.9}
+.flex-end{display:flex;justify-content:flex-end;margin-top:16px;gap:8px}
+
+.table-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+thead th{text-align:left;padding:8px 11px;font-size:10px;font-weight:700;color:var(--muted2);text-transform:uppercase;letter-spacing:.7px;border-bottom:1px solid var(--border)}
+tbody tr{border-bottom:1px solid rgba(44,49,68,.4);transition:background .15s}
+tbody tr:hover{background:rgba(255,255,255,.02)}
+tbody td{padding:10px 11px;vertical-align:middle}
+tbody tr:last-child{border-bottom:none}
+
+.spill{display:inline-flex;align-items:center;gap:3px;padding:3px 8px;border-radius:20px;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.4px}
+.sp-pending{background:rgba(245,158,11,.15);color:var(--yellow);border:1px solid rgba(245,158,11,.25)}
+.sp-approved{background:rgba(16,185,129,.15);color:var(--green);border:1px solid rgba(16,185,129,.25)}
+.sp-rejected{background:rgba(239,68,68,.15);color:var(--red);border:1px solid rgba(239,68,68,.25)}
+.abtn{padding:4px 9px;border-radius:6px;border:1px solid;font-size:11px;font-weight:600;cursor:pointer;font-family:inherit;transition:all .15s;margin-right:3px}
+.ba{background:rgba(16,185,129,.1);color:var(--green);border-color:rgba(16,185,129,.3)}
+.br{background:rgba(239,68,68,.1);color:var(--red);border-color:rgba(239,68,68,.3)}
+.be{background:rgba(59,130,246,.1);color:var(--accent);border-color:rgba(59,130,246,.3)}
+.bd{background:rgba(239,68,68,.1);color:var(--red);border-color:rgba(239,68,68,.3)}
+
+.tbadge{display:inline-flex;align-items:center;padding:3px 8px;border-radius:12px;font-size:10px;font-weight:700;white-space:nowrap}
+.th{background:rgba(239,68,68,.15);color:#fca5a5}
+.tw{background:rgba(16,185,129,.15);color:#6ee7b7}
+.ts{background:rgba(245,158,11,.15);color:#fcd34d}
+.tl{background:rgba(59,130,246,.15);color:#93c5fd}
+
+.chip{display:inline-flex;padding:6px 12px;border-radius:8px;border:1px solid var(--border);background:var(--s2);font-size:12px;font-weight:500;cursor:pointer;transition:all .15s;user-select:none;margin:3px}
+.chip.sel{background:rgba(59,130,246,.2);border-color:var(--accent);color:var(--accent)}
+
+.acc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.acc-card{background:var(--s2);border:1px solid var(--border);border-radius:12px;padding:16px}
+.acc-av{width:36px;height:36px;border-radius:8px;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;margin-bottom:10px}
+.acc-name{font-weight:700;font-size:13px;margin-bottom:3px}
+.acc-det{font-size:11px;color:var(--muted2);margin-bottom:2px}
+.acc-acts{display:flex;gap:5px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)}
+.acc-acts button{flex:1;padding:5px;border-radius:6px;border:none;font-size:11px;font-weight:600;cursor:pointer}
+.bea{background:rgba(59,130,246,.2);color:var(--accent)}
+.bda{background:rgba(239,68,68,.2);color:var(--red)}
+
+.filter-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:18px}
+
+.overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.65);z-index:300;align-items:center;justify-content:center;padding:16px}
+.overlay.open{display:flex;animation:fadeUp .3s ease}
+.modal{background:var(--s1);border:1px solid var(--border);border-radius:16px;padding:26px;width:100%;max-width:500px;max-height:88vh;overflow-y:auto;position:relative}
+.modal-title{font-size:17px;font-weight:700;margin-bottom:16px}
+.mclose{position:absolute;top:12px;right:12px;background:transparent;border:none;color:var(--muted2);font-size:18px;cursor:pointer;width:28px;height:28px;display:flex;align-items:center;justify-content:center;border-radius:6px}
+.mclose:hover{background:var(--s3)}
+
+.sig-wrap{border:2px dashed var(--border);border-radius:10px;background:rgba(255,255,255,.01);overflow:hidden;margin:8px 0;touch-action:none}
+.sig-canvas{display:block;width:100%;height:160px;cursor:crosshair;touch-action:none}
+.sig-ctrls{display:flex;gap:8px;margin-top:8px}
+.sig-ctrls button{flex:1;padding:8px;border-radius:8px;border:1px solid var(--border);background:var(--s2);color:var(--text);font-size:12px;font-weight:600;cursor:pointer}
+
+.empty-state{text-align:center;padding:36px;color:var(--muted)}
+.empty-icon{font-size:32px;margin-bottom:8px}
+
+/* LOADING OVERLAY */
+#loading{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(10,12,16,.85);z-index:500;align-items:center;justify-content:center;flex-direction:column;gap:14px}
+#loading.show{display:flex}
+.spinner{width:36px;height:36px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
+.loading-text{font-size:13px;color:var(--muted2)}
+
+#toast{position:fixed;bottom:20px;right:20px;border-radius:10px;padding:12px 18px;font-size:13px;font-weight:500;z-index:999;opacity:0;transform:translateY(10px);transition:all .3s;pointer-events:none;max-width:300px;border:1px solid var(--border)}
+#toast.show{opacity:1;transform:translateY(0)}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.mono{font-family:'DM Mono',monospace}
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div id="loading">
+  <div class="spinner"></div>
+  <div class="loading-text" id="loading-text">Memuat data...</div>
+</div>
+
+<!-- ═══ SETUP ═══ -->
+<div id="setup-screen">
+  <div class="setup-card">
+    <div class="logo-row">
+      <div class="logo-box">⏱</div>
+      <div><h1>LemburApp</h1><p>Sistem Manajemen Lembur</p></div>
+    </div>
+
+    <!-- Step 1: SheetDB URL -->
+    <div class="step active" id="step-url">
+      <div class="step-badge"><div class="sdot">1</div> Langkah 1 dari 3</div>
+      <div class="step-title">Hubungkan Google Sheets</div>
+      <p class="step-sub">LemburApp menyimpan data ke <strong>Google Sheets</strong> via SheetDB.io (gratis). Ikuti langkah di bawah, lalu paste URL API-nya.</p>
+      <div class="field">
+        <label>SheetDB API URL</label>
+        <input type="text" id="sheetdb-url" placeholder="https://sheetdb.io/api/v1/xxxxxxxx">
+      </div>
+      <button class="btn-main" onclick="setupSheetDB()">Verifikasi & Lanjut →</button>
+      <div class="info-box">
+        <strong>Cara setup (5 menit):</strong><br><br>
+        <strong>1.</strong> Buka <strong>sheets.google.com</strong> → buat spreadsheet baru<br>
+        <strong>2.</strong> Buat <strong>2 sheet tab</strong> dengan nama persis:<br>
+        &nbsp;&nbsp;&nbsp;• <code>accounts</code><br>
+        &nbsp;&nbsp;&nbsp;• <code>overtimes</code><br>
+        <strong>3.</strong> Di sheet <code>accounts</code>, baris 1 isi header:<br>
+        &nbsp;&nbsp;&nbsp;<code>id | name | empno | username | password | role | initials</code><br>
+        <strong>4.</strong> Di sheet <code>overtimes</code>, baris 1 isi header:<br>
+        &nbsp;&nbsp;&nbsp;<code>id | accId | date | start | end | type | reason | status | empSig | adminSig | createdAt</code><br>
+        <strong>5.</strong> Buka <strong>sheetdb.io</strong> → Sign Up gratis → <strong>Create API</strong><br>
+        <strong>6.</strong> Paste link Google Sheets tadi → copy URL API yang muncul<br>
+        <strong>7.</strong> Paste URL di atas ↑
+      </div>
+      <div class="warn-box">⚠️ Pastikan nama sheet tab ditulis <strong>huruf kecil</strong> persis: <code>accounts</code> dan <code>overtimes</code></div>
+    </div>
+
+    <!-- Step 2: Test Connection -->
+    <div class="step" id="step-test">
+      <div class="step-badge"><div class="sdot">2</div> Langkah 2 dari 3</div>
+      <div class="step-title">Koneksi Berhasil! ✓</div>
+      <p class="step-sub">Google Sheets berhasil terhubung. Sekarang buat akun Admin untuk mulai menggunakan LemburApp.</p>
+      <div style="padding:14px;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.2);border-radius:10px;font-size:13px;color:var(--green);margin-bottom:20px">
+        ✓ SheetDB API terhubung dengan baik
+      </div>
+      <button class="btn-main" onclick="goToStepAdmin()">Lanjut Buat Admin →</button>
+    </div>
+
+    <!-- Step 3: Admin Account -->
+    <div class="step" id="step-admin">
+      <div class="step-badge"><div class="sdot">3</div> Langkah 3 dari 3</div>
+      <div class="step-title">Buat Akun Admin</div>
+      <p class="step-sub">Akun admin digunakan untuk mengelola karyawan dan permintaan lembur.</p>
+      <div class="field"><label>Nama Lengkap</label><input type="text" id="admin-name" placeholder="Nama admin"></div>
+      <div class="field"><label>Username</label><input type="text" id="admin-user" placeholder="Buat username"></div>
+      <div class="field"><label>Password</label><input type="password" id="admin-pass" placeholder="Minimal 6 karakter"></div>
+      <button class="btn-main" onclick="setupAdmin()">Mulai Menggunakan LemburApp →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ LOGIN ═══ -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="logo-row" style="margin-bottom:22px">
+      <div class="logo-box">⏱</div>
+      <div><h1 style="font-size:18px;font-weight:700">LemburApp</h1><p style="font-size:11px;color:var(--muted2)">Sistem Manajemen Lembur</p></div>
+    </div>
+
+    <div id="login-form">
+      <div class="form-title">Masuk</div>
+      <p class="form-sub">Username & password akun Anda</p>
+      <div class="field"><label>Tipe Akun</label>
+        <select id="login-role"><option value="admin">Admin</option><option value="employee">Employee</option></select>
+      </div>
+      <div class="field"><label>Username</label><input type="text" id="login-user" placeholder="Username"></div>
+      <div class="field"><label>Password</label><input type="password" id="login-pass" placeholder="Password"></div>
+      <button class="btn-main" onclick="doLogin()">Masuk →</button>
+      <div style="text-align:center;margin-top:14px;font-size:13px;color:var(--muted2)">
+        Belum punya akun? <span class="link" onclick="switchForm('signup')">Daftar di sini</span>
+      </div>
+    </div>
+
+    <div id="signup-form" style="display:none">
+      <div class="form-title">Daftar Akun</div>
+      <p class="form-sub">Buat akun karyawan baru</p>
+      <div class="field"><label>Nama Lengkap</label><input type="text" id="su-name" placeholder="Nama lengkap"></div>
+      <div class="field"><label>No. Karyawan</label><input type="text" id="su-empno" placeholder="EMP001"></div>
+      <div class="field"><label>Username</label><input type="text" id="su-user" placeholder="Buat username unik"></div>
+      <div class="field"><label>Password</label><input type="password" id="su-pass" placeholder="Minimal 6 karakter"></div>
+      <div class="field"><label>Konfirmasi Password</label><input type="password" id="su-pass2" placeholder="Ulangi password"></div>
+      <button class="btn-main" onclick="doSignup()">Daftar →</button>
+      <div style="text-align:center;margin-top:14px;font-size:13px;color:var(--muted2)">
+        Sudah punya akun? <span class="link" onclick="switchForm('login')">Masuk di sini</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ APP ═══ -->
+<div id="app">
+  <div class="topbar">
+    <div class="t-left">
+      <span class="t-logo">⏱ LemburApp</span>
+      <span class="rbadge" id="role-badge"></span>
+    </div>
+    <div class="t-right">
+      <div class="notif-btn" onclick="toggleNotif()">🔔<div class="nbadge" id="nbadge" style="display:none"></div></div>
+      <div class="userpill"><div class="uavatar" id="uav"></div><span id="uname"></span></div>
+      <button class="logout-btn" onclick="doLogout()">Keluar</button>
+      <div class="notif-panel" id="notif-panel">
+        <div class="notif-hdr">🔔 Notifikasi</div>
+        <div id="notif-list"></div>
+      </div>
+    </div>
+  </div>
+  <div class="nav-tabs" id="nav-tabs"></div>
+  <div class="main">
+
+    <!-- ADMIN: Dashboard -->
+    <div class="page" id="page-admin-home">
+      <div class="stats-row" id="admin-stats"></div>
+      <div class="card">
+        <div class="card-title">📋 Semua Permintaan Lembur</div>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Karyawan</th><th>Tanggal</th><th>Jam</th><th>Tipe</th><th>Alasan</th><th>Status</th><th>Aksi</th></tr></thead>
+          <tbody id="admin-table"></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- ADMIN: Buat Lembur -->
+    <div class="page" id="page-admin-create">
+      <div class="card">
+        <div class="card-title">➕ Buat Permintaan Lembur</div>
+        <div class="form-grid">
+          <div class="fi ff"><label>Pilih Karyawan</label><div id="emp-chips" style="margin-top:6px"></div></div>
+          <div class="fi"><label>Tanggal</label><input type="date" id="f-date"></div>
+          <div class="fi"><label>Jam Mulai</label><input type="time" id="f-start"></div>
+          <div class="fi"><label>Jam Selesai</label><input type="time" id="f-end"></div>
+          <div class="fi"><label>Jenis Lembur</label>
+            <select id="f-type">
+              <option value="">-- Pilih Jenis --</option>
+              <option value="holiday">🎉 Lembur Hari Libur</option>
+              <option value="work">💼 Lembur Pekerjaan</option>
+              <option value="sick">🤒 Lembur Back Up Sakit</option>
+              <option value="leave">📅 Lembur Back Up Cuti</option>
+            </select>
+          </div>
+          <div class="fi ff"><label>Alasan / Keterangan</label><textarea id="f-reason" rows="3" placeholder="Keterangan lembur..."></textarea></div>
+        </div>
+        <div class="flex-end"><button class="btn-go" onclick="createOvertime()">Kirim Permintaan →</button></div>
+      </div>
+    </div>
+
+    <!-- ADMIN: Rekap -->
+    <div class="page" id="page-admin-reports">
+      <div class="card">
+        <div class="card-title">📊 Rekap & Report Lembur</div>
+        <div class="filter-row">
+          <div class="fi"><label>Karyawan</label><select id="f-emp"><option value="">Semua</option></select></div>
+          <div class="fi"><label>Jenis Lembur</label>
+            <select id="f-jenis">
+              <option value="">Semua</option>
+              <option value="holiday">Hari Libur</option>
+              <option value="work">Pekerjaan</option>
+              <option value="sick">Back Up Sakit</option>
+              <option value="leave">Back Up Cuti</option>
+            </select>
+          </div>
+          <div class="fi"><label>Dari Tanggal</label><input type="date" id="f-from"></div>
+          <div class="fi"><label>Sampai Tanggal</label><input type="date" id="f-to"></div>
+          <div class="fi" style="display:flex;align-items:flex-end;gap:8px">
+            <button class="btn-go" onclick="applyFilter()" style="flex:1;padding:10px 14px">Tampilkan</button>
+            <button onclick="window.print()" style="padding:10px 13px;border:1px solid var(--border);border-radius:9px;background:var(--s2);cursor:pointer;font-size:13px">🖨️</button>
+          </div>
+        </div>
+        <div class="stats-row" id="rep-stats" style="display:none;margin-bottom:16px"></div>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Karyawan</th><th>No. Karyawan</th><th>Tanggal</th><th>Jam</th><th>Tipe</th><th>Alasan</th><th>Status</th></tr></thead>
+          <tbody id="rep-table"><tr><td colspan="7"><div class="empty-state">Pilih filter lalu klik Tampilkan</div></td></tr></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- ADMIN: Akun -->
+    <div class="page" id="page-admin-accounts">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+        <div>
+          <h2 style="font-size:16px;font-weight:700;margin-bottom:2px">👥 Kelola Akun Karyawan</h2>
+          <p style="font-size:11px;color:var(--muted2)">Tambah, edit, atau hapus akun karyawan</p>
+        </div>
+        <button class="btn-go" style="padding:8px 14px;font-size:12px" onclick="openModal('modal-add-acc')">+ Akun Baru</button>
+      </div>
+      <div class="acc-grid" id="acc-list"></div>
+    </div>
+
+    <!-- EMP: Permintaan -->
+    <div class="page" id="page-emp-home">
+      <div class="stats-row" id="emp-stats"></div>
+      <div class="card">
+        <div class="card-title">📬 Permintaan Lembur Masuk</div>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Tanggal</th><th>Jam</th><th>Tipe</th><th>Alasan</th><th>Status</th><th>Aksi</th></tr></thead>
+          <tbody id="emp-pending-table"></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- EMP: Riwayat -->
+    <div class="page" id="page-emp-history">
+      <div class="card">
+        <div class="card-title">📁 Riwayat Lembur Saya</div>
+        <div class="table-wrap"><table>
+          <thead><tr><th>Tanggal</th><th>Jam</th><th>Tipe</th><th>Alasan</th><th>Status</th><th>Aksi</th></tr></thead>
+          <tbody id="emp-hist-table"></tbody>
+        </table></div>
+      </div>
+    </div>
+
+    <!-- EMP: Tanda Tangan -->
+    <div class="page" id="page-emp-sign">
+      <div class="card">
+        <div class="card-title">✍️ Tanda Tangan Digital</div>
+        <div class="fi ff" style="margin-bottom:16px"><label>Pilih Lembur yang Sudah Disetujui</label>
+          <select id="sig-select" onchange="loadSigDetail()" style="margin-top:6px;width:100%;background:var(--s2);border:1px solid var(--border);border-radius:9px;padding:10px 12px;color:var(--text);font-family:inherit;font-size:13px;outline:none">
+            <option value="">Pilih...</option>
+          </select>
+        </div>
+        <div id="sig-detail" style="display:none">
+          <div style="padding:14px;background:var(--s2);border-radius:10px;border:1px solid var(--border);font-size:13px;margin-bottom:14px;display:grid;grid-template-columns:1fr 1fr;gap:8px">
+            <div><strong>Tanggal:</strong> <span id="sd-date"></span></div>
+            <div><strong>Jam:</strong> <span id="sd-time"></span></div>
+            <div><strong>Tipe:</strong> <span id="sd-type"></span></div>
+            <div><strong>Alasan:</strong> <span id="sd-reason"></span></div>
+          </div>
+          <div class="fi"><label>Tanda Tangan Anda</label>
+            <div class="sig-wrap"><canvas class="sig-canvas" id="emp-canvas"></canvas></div>
+            <div class="sig-ctrls">
+              <button onclick="clearSig('emp-canvas')">🔄 Hapus</button>
+              <button onclick="saveSig('emp')" style="background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none">✓ Simpan Tanda Tangan</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- MODALS -->
+<div class="overlay" id="modal-edit-ot">
+  <div class="modal">
+    <button class="mclose" onclick="closeModal('modal-edit-ot')">✕</button>
+    <div class="modal-title">✏️ Edit Lembur</div>
+    <div class="form-grid">
+      <div class="fi"><label>Tanggal</label><input type="date" id="eo-date"></div>
+      <div class="fi"><label>Jam Mulai</label><input type="time" id="eo-start"></div>
+      <div class="fi"><label>Jam Selesai</label><input type="time" id="eo-end"></div>
+      <div class="fi"><label>Jenis</label><select id="eo-type">
+        <option value="holiday">Lembur Hari Libur</option>
+        <option value="work">Lembur Pekerjaan</option>
+        <option value="sick">Back Up Sakit</option>
+        <option value="leave">Back Up Cuti</option>
+      </select></div>
+      <div class="fi ff"><label>Alasan</label><textarea id="eo-reason" rows="3"></textarea></div>
+    </div>
+    <div class="flex-end">
+      <button onclick="closeModal('modal-edit-ot')" style="padding:9px 16px;background:transparent;border:1px solid var(--border);border-radius:8px;cursor:pointer;color:var(--muted2)">Batal</button>
+      <button class="btn-go" onclick="saveEditOt()">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="modal-admin-sign">
+  <div class="modal">
+    <button class="mclose" onclick="closeModal('modal-admin-sign')">✕</button>
+    <div class="modal-title">✍️ Tandatangani & Setujui</div>
+    <div id="asig-info" style="padding:14px;background:var(--s2);border-radius:10px;border:1px solid var(--border);font-size:13px;margin-bottom:14px"></div>
+    <div class="fi"><label>Tanda Tangan Admin</label>
+      <div class="sig-wrap"><canvas class="sig-canvas" id="admin-canvas"></canvas></div>
+      <div class="sig-ctrls">
+        <button onclick="clearSig('admin-canvas')">🔄 Hapus</button>
+        <button onclick="saveSig('admin')" style="background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border:none">✓ Tandatangani & Setujui</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="modal-edit-acc">
+  <div class="modal">
+    <button class="mclose" onclick="closeModal('modal-edit-acc')">✕</button>
+    <div class="modal-title">✏️ Edit Akun Karyawan</div>
+    <div class="form-grid">
+      <div class="fi ff"><label>Nama Lengkap</label><input type="text" id="ea-name"></div>
+      <div class="fi ff"><label>No. Karyawan</label><input type="text" id="ea-empno"></div>
+      <div class="fi ff"><label>Username</label><input type="text" id="ea-user"></div>
+      <div class="fi ff"><label>Password Baru (kosongkan jika tidak diubah)</label><input type="password" id="ea-pass"></div>
+    </div>
+    <div class="flex-end">
+      <button onclick="closeModal('modal-edit-acc')" style="padding:9px 16px;background:transparent;border:1px solid var(--border);border-radius:8px;cursor:pointer;color:var(--muted2)">Batal</button>
+      <button class="btn-go" onclick="saveEditAcc()">Simpan</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="modal-add-acc">
+  <div class="modal">
+    <button class="mclose" onclick="closeModal('modal-add-acc')">✕</button>
+    <div class="modal-title">➕ Tambah Akun Karyawan</div>
+    <div class="form-grid">
+      <div class="fi ff"><label>Nama Lengkap</label><input type="text" id="aa-name"></div>
+      <div class="fi ff"><label>No. Karyawan</label><input type="text" id="aa-empno"></div>
+      <div class="fi ff"><label>Username</label><input type="text" id="aa-user"></div>
+      <div class="fi ff"><label>Password</label><input type="password" id="aa-pass"></div>
+    </div>
+    <div class="flex-end">
+      <button onclick="closeModal('modal-add-acc')" style="padding:9px 16px;background:transparent;border:1px solid var(--border);border-radius:8px;cursor:pointer;color:var(--muted2)">Batal</button>
+      <button class="btn-go" onclick="saveAddAcc()">Tambah</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════
+// CONFIG & STATE
+// ══════════════════════════════════════════════
+let SHEET_URL = '';
+let accounts = [];
+let overtimes = [];
+let currentUser = null;
+let notifOpen = false;
+let selectedEmps = [];
+let editingOtId = null;
+let signingOtId = null;
+let editingAccId = null;
+
+// ══════════════════════════════════════════════
+// SHEETDB API — semua data ke Google Sheets
+// ══════════════════════════════════════════════
+async function sheetGet(sheet) {
+  const r = await fetch(`${SHEET_URL}/search?sheet=${sheet}&limit=9999`);
+  if (!r.ok) throw new Error('GET ' + sheet + ' failed: ' + r.status);
+  return await r.json();
+}
+
+async function sheetPost(sheet, row) {
+  const r = await fetch(`${SHEET_URL}?sheet=${sheet}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+    body: JSON.stringify({ data: [row] })
+  });
+  if (!r.ok) throw new Error('POST failed: ' + r.status);
+  return await r.json();
+}
+
+async function sheetPatch(sheet, col, val, data) {
+  const r = await fetch(`${SHEET_URL}/${col}/${encodeURIComponent(val)}?sheet=${sheet}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+    body: JSON.stringify({ data })
+  });
+  if (!r.ok) throw new Error('PATCH failed: ' + r.status);
+  return await r.json();
+}
+
+async function sheetDelete(sheet, col, val) {
+  const r = await fetch(`${SHEET_URL}/${col}/${encodeURIComponent(val)}?sheet=${sheet}`, { method: 'DELETE' });
+  if (!r.ok) throw new Error('DELETE failed: ' + r.status);
+  return await r.json();
+}
+
+// ══════════════════════════════════════════════
+// LOCAL CACHE — supaya cepat & offline-friendly
+// ══════════════════════════════════════════════
+function saveLocal() {
+  localStorage.setItem('la_url', SHEET_URL);
+  localStorage.setItem('la_accounts', JSON.stringify(accounts));
+  localStorage.setItem('la_overtimes', JSON.stringify(overtimes));
+}
+
+function loadLocal() {
+  SHEET_URL = localStorage.getItem('la_url') || '';
+  accounts = JSON.parse(localStorage.getItem('la_accounts') || '[]');
+  overtimes = JSON.parse(localStorage.getItem('la_overtimes') || '[]');
+}
+
+async function loadFromSheet() {
+  showLoading('Memuat data dari Google Sheets...');
+  try {
+    const [accs, ots] = await Promise.all([sheetGet('accounts'), sheetGet('overtimes')]);
+    accounts = accs || [];
+    overtimes = ots || [];
+    saveLocal();
+  } catch(e) {
+    console.warn('Sheet load failed, using local cache:', e);
+    showToast('Menggunakan data offline (cache)', 'warn');
+  }
+  hideLoading();
+}
+
+// ══════════════════════════════════════════════
+// SETUP
+// ══════════════════════════════════════════════
+async function init() {
+  loadLocal();
+  if (SHEET_URL && accounts.length > 0) {
+    showScreen('login');
+    loadFromSheet(); // refresh di background
+  } else if (SHEET_URL) {
+    // URL ada tapi akun kosong, coba load ulang
+    await loadFromSheet();
+    if (accounts.length > 0) showScreen('login');
+    else showStep('step-admin');
+  } else {
+    showScreen('setup');
+  }
+}
+
+async function setupSheetDB() {
+  const url = document.getElementById('sheetdb-url').value.trim().replace(/\/$/, '');
+  if (!url || !url.includes('sheetdb.io')) { showToast('URL tidak valid! Harus dari sheetdb.io', 'error'); return; }
+
+  showLoading('Memverifikasi koneksi...');
+  try {
+    const r = await fetch(`${url}?sheet=accounts`);
+    if (!r.ok) throw new Error('Status ' + r.status);
+    SHEET_URL = url;
+    localStorage.setItem('la_url', url);
+    hideLoading();
+    showToast('Koneksi berhasil! ✓', 'success');
+    showStep('step-test');
+  } catch(e) {
+    hideLoading();
+    showToast('Koneksi gagal! Cek URL & sheet tab name', 'error');
+  }
+}
+
+function goToStepAdmin() { showStep('step-admin'); }
+
+async function setupAdmin() {
+  const name = document.getElementById('admin-name').value.trim();
+  const user = document.getElementById('admin-user').value.trim();
+  const pass = document.getElementById('admin-pass').value;
+  if (!name || !user || !pass) { showToast('Semua field harus diisi!', 'error'); return; }
+  if (pass.length < 6) { showToast('Password minimal 6 karakter!', 'error'); return; }
+
+  const admin = {
+    id: 'acc_' + Date.now(),
+    name, empno: 'ADM001', username: user, password: pass,
+    role: 'admin', initials: mkInitials(name)
+  };
+
+  showLoading('Menyimpan akun admin...');
+  try {
+    await sheetPost('accounts', admin);
+    accounts.push(admin);
+    saveLocal();
+    hideLoading();
+    showToast('Setup selesai! Silakan login.', 'success');
+    showScreen('login');
+  } catch(e) {
+    hideLoading();
+    showToast('Gagal simpan: ' + e.message, 'error');
+  }
+}
+
+// ══════════════════════════════════════════════
+// AUTH
+// ══════════════════════════════════════════════
+function switchForm(f) {
+  document.getElementById('login-form').style.display = f === 'login' ? 'block' : 'none';
+  document.getElementById('signup-form').style.display = f === 'signup' ? 'block' : 'none';
+}
+
+async function doLogin() {
+  const role = document.getElementById('login-role').value;
+  const user = document.getElementById('login-user').value.trim();
+  const pass = document.getElementById('login-pass').value;
+  if (!user || !pass) { showToast('Username & password harus diisi!', 'error'); return; }
+
+  showLoading('Memuat data terbaru...');
+  await loadFromSheet();
+  hideLoading();
+
+  const acc = accounts.find(a => a.username === user && a.password === pass && a.role === role);
+  if (!acc) { showToast('Username atau password salah!', 'error'); return; }
+
+  currentUser = { ...acc };
+  document.getElementById('login-user').value = '';
+  document.getElementById('login-pass').value = '';
+  buildNav();
+  showScreen('app');
+  renderAll();
+}
+
+async function doSignup() {
+  const name = document.getElementById('su-name').value.trim();
+  const empno = document.getElementById('su-empno').value.trim();
+  const user = document.getElementById('su-user').value.trim();
+  const pass = document.getElementById('su-pass').value;
+  const pass2 = document.getElementById('su-pass2').value;
+
+  if (!name || !empno || !user || !pass || !pass2) { showToast('Semua field harus diisi!', 'error'); return; }
+  if (pass.length < 6) { showToast('Password minimal 6 karakter!', 'error'); return; }
+  if (pass !== pass2) { showToast('Password tidak cocok!', 'error'); return; }
+
+  showLoading('Mengecek username...');
+  await loadFromSheet();
+
+  if (accounts.find(a => a.username === user)) { hideLoading(); showToast('Username sudah terdaftar!', 'error'); return; }
+
+  const newAcc = {
+    id: 'acc_' + Date.now(),
+    name, empno, username: user, password: pass,
+    role: 'employee', initials: mkInitials(name)
+  };
+
+  updateLoading('Mendaftarkan akun...');
+  try {
+    await sheetPost('accounts', newAcc);
+    accounts.push(newAcc);
+    saveLocal();
+    hideLoading();
+    showToast('Akun berhasil dibuat! Silakan login.', 'success');
+    ['su-name','su-empno','su-user','su-pass','su-pass2'].forEach(id => document.getElementById(id).value = '');
+    switchForm('login');
+  } catch(e) {
+    hideLoading();
+    showToast('Gagal daftar: ' + e.message, 'error');
+  }
+}
+
+function doLogout() {
+  currentUser = null;
+  showScreen('login');
+}
+
+// ══════════════════════════════════════════════
+// NAV
+// ══════════════════════════════════════════════
+const ADMIN_TABS = [
+  {id:'admin-home', label:'📊 Dashboard'},
+  {id:'admin-create', label:'➕ Buat Lembur'},
+  {id:'admin-reports', label:'📊 Rekap'},
+  {id:'admin-accounts', label:'👥 Akun'},
+];
+const EMP_TABS = [
+  {id:'emp-home', label:'📬 Permintaan'},
+  {id:'emp-history', label:'📁 Riwayat'},
+  {id:'emp-sign', label:'✍️ Tanda Tangan'},
+];
+
+function buildNav() {
+  const tabs = currentUser.role === 'admin' ? ADMIN_TABS : EMP_TABS;
+  const nav = document.getElementById('nav-tabs');
+  nav.innerHTML = '';
+  tabs.forEach((t, i) => {
+    const el = document.createElement('button');
+    el.className = 'nav-tab' + (i === 0 ? ' active' : '');
+    el.textContent = t.label;
+    el.onclick = () => {
+      document.querySelectorAll('.nav-tab').forEach(x => x.classList.remove('active'));
+      el.classList.add('active');
+      showPage(t.id);
+      renderAll();
+    };
+    nav.appendChild(el);
+  });
+  document.getElementById('role-badge').textContent = currentUser.role === 'admin' ? 'Admin' : 'Employee';
+  document.getElementById('role-badge').className = 'rbadge ' + (currentUser.role === 'admin' ? 'rb-admin' : 'rb-emp');
+  document.getElementById('uav').textContent = currentUser.initials;
+  document.getElementById('uname').textContent = currentUser.name;
+  showPage(tabs[0].id);
+}
+
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  const pg = document.getElementById('page-' + id);
+  if (pg) pg.classList.add('active');
+}
+
+// ══════════════════════════════════════════════
+// RENDER
+// ══════════════════════════════════════════════
+function renderAll() {
+  updateNotif();
+  if (currentUser.role === 'admin') {
+    renderAdminStats(); renderAdminTable();
+    renderEmpChips(); renderAccList(); renderRepFilter();
+  } else {
+    renderEmpStats(); renderEmpPending();
+    renderEmpHist(); renderSigSelect();
+  }
+}
+
+function renderAdminStats() {
+  const t=overtimes.length, p=overtimes.filter(o=>o.status==='pending').length,
+        a=overtimes.filter(o=>o.status==='approved').length, r=overtimes.filter(o=>o.status==='rejected').length;
+  document.getElementById('admin-stats').innerHTML = `
+    <div class="scard"><div class="slabel">Total</div><div class="sval c-blue">${t}</div></div>
+    <div class="scard"><div class="slabel">Menunggu</div><div class="sval c-yellow">${p}</div></div>
+    <div class="scard"><div class="slabel">Disetujui</div><div class="sval c-green">${a}</div></div>
+    <div class="scard"><div class="slabel">Ditolak</div><div class="sval c-red">${r}</div></div>`;
+}
+
+function renderAdminTable() {
+  const tb = document.getElementById('admin-table');
+  if (!overtimes.length) { tb.innerHTML = `<tr><td colspan="7"><div class="empty-state"><div class="empty-icon">📭</div><p>Belum ada data</p></div></td></tr>`; return; }
+  tb.innerHTML = [...overtimes].reverse().map(o => {
+    const acc = accounts.find(a => a.id === o.accId);
+    return `<tr>
+      <td><strong>${acc?.name||'—'}</strong></td>
+      <td>${fmtDate(o.date)}</td>
+      <td class="mono" style="font-size:11px">${o.start}–${o.end}</td>
+      <td>${tbadge(o.type)}</td>
+      <td style="max-width:120px;font-size:11.5px;color:var(--muted2)">${o.reason||''}</td>
+      <td>${spill(o.status)}</td>
+      <td>
+        ${o.status==='pending'?`<button class="abtn ba" onclick="openAdminSign('${o.id}')">✍️</button>`:''}
+        <button class="abtn be" onclick="openEditOt('${o.id}')">✏️</button>
+        <button class="abtn bd" onclick="deleteOt('${o.id}')">🗑️</button>
+      </td></tr>`;
+  }).join('');
+}
+
+function renderEmpChips() {
+  const wrap = document.getElementById('emp-chips');
+  wrap.innerHTML = '';
+  accounts.filter(a => a.role === 'employee').forEach(e => {
+    const c = document.createElement('span');
+    c.className = 'chip' + (selectedEmps.includes(e.id) ? ' sel' : '');
+    c.textContent = e.name;
+    c.onclick = () => { selectedEmps.includes(e.id)?selectedEmps=selectedEmps.filter(x=>x!==e.id):selectedEmps.push(e.id); renderEmpChips(); };
+    wrap.appendChild(c);
+  });
+}
+
+function renderRepFilter() {
+  const sel = document.getElementById('f-emp');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">Semua Karyawan</option>';
+  accounts.filter(a=>a.role==='employee').forEach(e => {
+    const o = document.createElement('option'); o.value=e.id; o.textContent=e.name; sel.appendChild(o);
+  });
+  sel.value = cur;
+}
+
+function renderAccList() {
+  const list = document.getElementById('acc-list');
+  const emps = accounts.filter(a => a.role === 'employee');
+  if (!emps.length) { list.innerHTML = '<div class="empty-state"><div class="empty-icon">👥</div><p>Belum ada karyawan</p></div>'; return; }
+  list.innerHTML = emps.map(e => `
+    <div class="acc-card">
+      <div class="acc-av">${e.initials}</div>
+      <div class="acc-name">${e.name}</div>
+      <div class="acc-det">📌 ${e.empno}</div>
+      <div class="acc-det">👤 @${e.username}</div>
+      <div class="acc-acts">
+        <button class="bea" onclick="openEditAcc('${e.id}')">✏️ Edit</button>
+        <button class="bda" onclick="deleteAcc('${e.id}')">🗑️ Hapus</button>
+      </div>
+    </div>`).join('');
+}
+
+function myOt() { return overtimes.filter(o => o.accId === currentUser.id); }
+
+function renderEmpStats() {
+  const m=myOt();
+  document.getElementById('emp-stats').innerHTML=`
+    <div class="scard"><div class="slabel">Total</div><div class="sval c-blue">${m.length}</div></div>
+    <div class="scard"><div class="slabel">Menunggu</div><div class="sval c-yellow">${m.filter(o=>o.status==='pending').length}</div></div>
+    <div class="scard"><div class="slabel">Disetujui</div><div class="sval c-green">${m.filter(o=>o.status==='approved').length}</div></div>`;
+}
+
+function renderEmpPending() {
+  const p=myOt().filter(o=>o.status==='pending');
+  const tb=document.getElementById('emp-pending-table');
+  if(!p.length){tb.innerHTML=`<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">🎉</div><p>Tidak ada permintaan</p></div></td></tr>`;return;}
+  tb.innerHTML=p.map(o=>`<tr>
+    <td>${fmtDate(o.date)}</td>
+    <td class="mono" style="font-size:11px">${o.start}–${o.end}</td>
+    <td>${tbadge(o.type)}</td>
+    <td style="max-width:120px;font-size:11.5px;color:var(--muted2)">${o.reason||''}</td>
+    <td>${spill(o.status)}</td>
+    <td>
+      <button class="abtn ba" onclick="empAction('${o.id}','approved')">✓ Terima</button>
+      <button class="abtn br" onclick="empAction('${o.id}','rejected')">✕ Tolak</button>
+    </td></tr>`).join('');
+}
+
+function renderEmpHist() {
+  const all=myOt();
+  const tb=document.getElementById('emp-hist-table');
+  if(!all.length){tb.innerHTML=`<tr><td colspan="6"><div class="empty-state"><div class="empty-icon">📂</div><p>Belum ada riwayat</p></div></td></tr>`;return;}
+  tb.innerHTML=[...all].reverse().map(o=>`<tr>
+    <td>${fmtDate(o.date)}</td>
+    <td class="mono" style="font-size:11px">${o.start}–${o.end}</td>
+    <td>${tbadge(o.type)}</td>
+    <td style="max-width:120px;font-size:11.5px;color:var(--muted2)">${o.reason||''}</td>
+    <td>${spill(o.status)}</td>
+    <td>
+      <button class="abtn be" onclick="openEditOt('${o.id}')">✏️</button>
+      <button class="abtn bd" onclick="deleteOt('${o.id}')">🗑️</button>
+    </td></tr>`).join('');
+}
+
+function renderSigSelect() {
+  const sel=document.getElementById('sig-select');
+  const ok=myOt().filter(o=>o.status==='approved'&&!o.empSig);
+  sel.innerHTML='<option value="">Pilih...</option>';
+  ok.forEach(o=>{const opt=document.createElement('option');opt.value=o.id;opt.textContent=`${fmtDate(o.date)} (${o.start}–${o.end})`;sel.appendChild(opt);});
+}
+
+// ══════════════════════════════════════════════
+// ACTIONS
+// ══════════════════════════════════════════════
+async function createOvertime() {
+  if(!selectedEmps.length){showToast('Pilih minimal 1 karyawan!','error');return;}
+  const date=document.getElementById('f-date').value, start=document.getElementById('f-start').value,
+        end=document.getElementById('f-end').value, type=document.getElementById('f-type').value,
+        reason=document.getElementById('f-reason').value.trim();
+  if(!date||!start||!end||!type||!reason){showToast('Semua field harus diisi!','error');return;}
+  if(start>=end){showToast('Jam selesai harus setelah jam mulai!','error');return;}
+
+  showLoading('Menyimpan permintaan lembur...');
+  try {
+    for(const accId of selectedEmps) {
+      const ot = {id:'ot_'+Date.now()+'_'+accId,accId,date,start,end,type,reason,status:'pending',empSig:'',adminSig:'',createdAt:new Date().toISOString()};
+      await sheetPost('overtimes', ot);
+      overtimes.push(ot);
+      await new Promise(r=>setTimeout(r,300)); // small delay between requests
+    }
+    saveLocal();
+    const names=selectedEmps.map(id=>accounts.find(a=>a.id===id)?.name).join(', ');
+    selectedEmps=[];
+    document.getElementById('f-start').value=''; document.getElementById('f-end').value='';
+    document.getElementById('f-type').value=''; document.getElementById('f-reason').value='';
+    hideLoading(); renderAll(); showToast(`Dikirim ke: ${names}`,'success');
+  } catch(e) { hideLoading(); showToast('Gagal menyimpan: '+e.message,'error'); }
+}
+
+function openEditOt(id) {
+  const o=overtimes.find(x=>x.id===id); if(!o) return;
+  editingOtId=id;
+  document.getElementById('eo-date').value=o.date;
+  document.getElementById('eo-start').value=o.start;
+  document.getElementById('eo-end').value=o.end;
+  document.getElementById('eo-type').value=o.type;
+  document.getElementById('eo-reason').value=o.reason;
+  openModal('modal-edit-ot');
+}
+
+async function saveEditOt() {
+  const o=overtimes.find(x=>x.id===editingOtId); if(!o) return;
+  o.date=document.getElementById('eo-date').value;
+  o.start=document.getElementById('eo-start').value;
+  o.end=document.getElementById('eo-end').value;
+  o.type=document.getElementById('eo-type').value;
+  o.reason=document.getElementById('eo-reason').value;
+  showLoading('Menyimpan perubahan...');
+  try { await sheetPatch('overtimes','id',o.id,{date:o.date,start:o.start,end:o.end,type:o.type,reason:o.reason}); saveLocal(); hideLoading(); closeModal('modal-edit-ot'); renderAll(); showToast('Lembur berhasil diperbarui!','success'); }
+  catch(e) { hideLoading(); showToast('Gagal update: '+e.message,'error'); }
+}
+
+async function deleteOt(id) {
+  if(!confirm('Hapus permintaan lembur ini?')) return;
+  showLoading('Menghapus...');
+  try { await sheetDelete('overtimes','id',id); overtimes=overtimes.filter(o=>o.id!==id); saveLocal(); hideLoading(); renderAll(); showToast('Dihapus!','success'); }
+  catch(e) { hideLoading(); showToast('Gagal hapus: '+e.message,'error'); }
+}
+
+async function empAction(id, status) {
+  const o=overtimes.find(x=>x.id===id); if(!o) return;
+  showLoading('Menyimpan...');
+  try { await sheetPatch('overtimes','id',id,{status}); o.status=status; saveLocal(); hideLoading(); renderAll(); showToast(status==='approved'?'Lembur diterima!':'Lembur ditolak.','success'); }
+  catch(e) { hideLoading(); showToast('Gagal: '+e.message,'error'); }
+}
+
+function openAdminSign(id) {
+  signingOtId=id;
+  const o=overtimes.find(x=>x.id===id);
+  const acc=accounts.find(a=>a.id===o.accId);
+  document.getElementById('asig-info').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+      <div><strong>Karyawan:</strong> ${acc?.name||'—'}</div>
+      <div><strong>Tipe:</strong> ${typeLabel(o.type)}</div>
+      <div><strong>Tanggal:</strong> ${fmtDate(o.date)}</div>
+      <div><strong>Jam:</strong> ${o.start}–${o.end}</div>
+    </div>`;
+  clearSig('admin-canvas');
+  openModal('modal-admin-sign');
+}
+
+async function saveSig(who) {
+  const cid=who==='emp'?'emp-canvas':'admin-canvas';
+  const canvas=document.getElementById(cid);
+  const blank=document.createElement('canvas'); blank.width=canvas.width; blank.height=canvas.height;
+  if(canvas.toDataURL()===blank.toDataURL()){showToast('Silakan buat tanda tangan dulu!','error');return;}
+  const dataUrl=canvas.toDataURL();
+  const o=overtimes.find(x=>x.id===signingOtId); if(!o) return;
+
+  showLoading('Menyimpan tanda tangan...');
+  try {
+    if(who==='emp') {
+      await sheetPatch('overtimes','id',o.id,{empSig:dataUrl});
+      o.empSig=dataUrl;
+      saveLocal(); hideLoading();
+      showToast('Tanda tangan disimpan!','success');
+      clearSig('emp-canvas');
+      document.getElementById('sig-select').value='';
+      document.getElementById('sig-detail').style.display='none';
+    } else {
+      await sheetPatch('overtimes','id',o.id,{adminSig:dataUrl,status:'approved'});
+      o.adminSig=dataUrl; o.status='approved';
+      saveLocal(); hideLoading();
+      closeModal('modal-admin-sign');
+      showToast('Disetujui & ditandatangani!','success');
+    }
+    renderAll();
+  } catch(e) { hideLoading(); showToast('Gagal simpan tanda tangan: '+e.message,'error'); }
+}
+
+function loadSigDetail() {
+  const id=document.getElementById('sig-select').value;
+  if(!id){document.getElementById('sig-detail').style.display='none';return;}
+  signingOtId=id;
+  const o=overtimes.find(x=>x.id===id);
+  document.getElementById('sd-date').textContent=fmtDate(o.date);
+  document.getElementById('sd-time').textContent=`${o.start}–${o.end}`;
+  document.getElementById('sd-type').textContent=typeLabel(o.type);
+  document.getElementById('sd-reason').textContent=o.reason;
+  document.getElementById('sig-detail').style.display='block';
+  clearSig('emp-canvas');
+}
+
+// REPORTS
+function applyFilter() {
+  const empId=document.getElementById('f-emp').value, jenis=document.getElementById('f-jenis').value,
+        from=document.getElementById('f-from').value, to=document.getElementById('f-to').value;
+  let data=[...overtimes];
+  if(empId) data=data.filter(o=>o.accId===empId);
+  if(jenis) data=data.filter(o=>o.type===jenis);
+  if(from) data=data.filter(o=>o.date>=from);
+  if(to) data=data.filter(o=>o.date<=to);
+
+  const rs=document.getElementById('rep-stats');
+  rs.style.display='grid';
+  rs.innerHTML=`
+    <div class="scard"><div class="slabel">Total</div><div class="sval c-blue">${data.length}</div></div>
+    <div class="scard"><div class="slabel">Disetujui</div><div class="sval c-green">${data.filter(o=>o.status==='approved').length}</div></div>
+    <div class="scard"><div class="slabel">Menunggu</div><div class="sval c-yellow">${data.filter(o=>o.status==='pending').length}</div></div>
+    <div class="scard"><div class="slabel">Ditolak</div><div class="sval c-red">${data.filter(o=>o.status==='rejected').length}</div></div>`;
+
+  const tb=document.getElementById('rep-table');
+  tb.innerHTML=data.map(o=>{
+    const acc=accounts.find(a=>a.id===o.accId);
+    return `<tr>
+      <td>${acc?.name||'—'}</td><td style="font-size:11px">${acc?.empno||'—'}</td>
+      <td>${fmtDate(o.date)}</td><td class="mono" style="font-size:11px">${o.start}–${o.end}</td>
+      <td>${tbadge(o.type)}</td>
+      <td style="max-width:120px;font-size:11.5px;color:var(--muted2)">${o.reason||''}</td>
+      <td>${spill(o.status)}</td></tr>`;
+  }).join('')||`<tr><td colspan="7"><div class="empty-state">Tidak ada data sesuai filter</div></td></tr>`;
+}
+
+// ACCOUNT MANAGEMENT
+function openEditAcc(id) {
+  const acc=accounts.find(a=>a.id===id); if(!acc) return;
+  editingAccId=id;
+  document.getElementById('ea-name').value=acc.name;
+  document.getElementById('ea-empno').value=acc.empno;
+  document.getElementById('ea-user').value=acc.username;
+  document.getElementById('ea-pass').value='';
+  openModal('modal-edit-acc');
+}
+
+async function saveEditAcc() {
+  const acc=accounts.find(a=>a.id===editingAccId); if(!acc) return;
+  const name=document.getElementById('ea-name').value.trim();
+  const empno=document.getElementById('ea-empno').value.trim();
+  const user=document.getElementById('ea-user').value.trim();
+  const pass=document.getElementById('ea-pass').value;
+  if(!name||!empno||!user){showToast('Nama, no karyawan, username wajib!','error');return;}
+  if(accounts.find(a=>a.id!==editingAccId&&a.username===user)){showToast('Username sudah terdaftar!','error');return;}
+  const upd={name,empno,username:user,initials:mkInitials(name)};
+  if(pass) upd.password=pass;
+  showLoading('Menyimpan perubahan...');
+  try {
+    await sheetPatch('accounts','id',editingAccId,upd);
+    Object.assign(acc,upd); saveLocal();
+    hideLoading(); closeModal('modal-edit-acc'); renderAll();
+    showToast('Data karyawan diperbarui!','success');
+  } catch(e){hideLoading();showToast('Gagal: '+e.message,'error');}
+}
+
+async function saveAddAcc() {
+  const name=document.getElementById('aa-name').value.trim();
+  const empno=document.getElementById('aa-empno').value.trim();
+  const user=document.getElementById('aa-user').value.trim();
+  const pass=document.getElementById('aa-pass').value;
+  if(!name||!empno||!user||!pass){showToast('Semua field harus diisi!','error');return;}
+  if(accounts.find(a=>a.username===user)){showToast('Username sudah terdaftar!','error');return;}
+  const newAcc={id:'acc_'+Date.now(),name,empno,username:user,password:pass,role:'employee',initials:mkInitials(name)};
+  showLoading('Menambahkan akun...');
+  try {
+    await sheetPost('accounts',newAcc); accounts.push(newAcc); saveLocal();
+    hideLoading(); closeModal('modal-add-acc'); renderAll();
+    showToast('Akun karyawan ditambahkan!','success');
+  } catch(e){hideLoading();showToast('Gagal: '+e.message,'error');}
+}
+
+async function deleteAcc(id) {
+  if(!confirm('Hapus akun karyawan ini?')) return;
+  showLoading('Menghapus...');
+  try {
+    await sheetDelete('accounts','id',id); accounts=accounts.filter(a=>a.id!==id); saveLocal();
+    hideLoading(); renderAll(); showToast('Akun dihapus!','success');
+  } catch(e){hideLoading();showToast('Gagal hapus: '+e.message,'error');}
+}
+
+// NOTIFICATIONS
+function updateNotif() {
+  if(!currentUser) return;
+  let c=currentUser.role==='admin'?overtimes.filter(o=>o.status==='pending').length:myOt().filter(o=>o.status==='pending').length;
+  const b=document.getElementById('nbadge'); b.style.display=c?'flex':'none'; b.textContent=c;
+  let items=[];
+  if(currentUser.role==='admin') {
+    items=overtimes.filter(o=>o.status==='pending').map(o=>{
+      const acc=accounts.find(a=>a.id===o.accId);
+      return `<div class="notif-item"><div class="ni-title"><span class="ndot"></span>${acc?.name||'—'} — Menunggu</div><div class="ni-sub">${fmtDate(o.date)} · ${o.start}–${o.end}</div></div>`;
+    });
+  } else {
+    items=myOt().filter(o=>o.status==='pending').map(o=>
+      `<div class="notif-item"><div class="ni-title"><span class="ndot"></span>Permintaan lembur masuk</div><div class="ni-sub">${fmtDate(o.date)} · ${typeLabel(o.type)}</div></div>`);
+  }
+  document.getElementById('notif-list').innerHTML=items.length?items.join(''):'<div style="padding:20px;text-align:center;color:var(--muted);font-size:13px">Tidak ada notifikasi</div>';
+}
+
+function toggleNotif() {
+  notifOpen=!notifOpen;
+  document.getElementById('notif-panel').classList.toggle('open',notifOpen);
+}
+document.addEventListener('click',e=>{
+  if(!e.target.closest('.notif-btn')&&!e.target.closest('.notif-panel')){notifOpen=false;document.getElementById('notif-panel').classList.remove('open');}
+});
+
+// CANVAS
+function initCanvas(id) {
+  const canvas=document.getElementById(id); if(!canvas) return;
+  const ctx=canvas.getContext('2d');
+  let drawing=false;
+  const pos=(e)=>{
+    const rect=canvas.getBoundingClientRect();
+    const sx=canvas.width/rect.width, sy=canvas.height/rect.height;
+    const src=e.touches?e.touches[0]:e;
+    return{x:(src.clientX-rect.left)*sx, y:(src.clientY-rect.top)*sy};
+  };
+  const draw=(e)=>{if(!drawing)return;const p=pos(e);ctx.lineTo(p.x,p.y);ctx.strokeStyle='#60a5fa';ctx.lineWidth=2.5;ctx.lineCap='round';ctx.lineJoin='round';ctx.stroke();};
+  canvas.addEventListener('mousedown',e=>{drawing=true;const p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y);});
+  canvas.addEventListener('mousemove',draw);
+  canvas.addEventListener('mouseup',()=>drawing=false);
+  canvas.addEventListener('mouseleave',()=>drawing=false);
+  canvas.addEventListener('touchstart',e=>{e.preventDefault();drawing=true;const p=pos(e);ctx.beginPath();ctx.moveTo(p.x,p.y);},{passive:false});
+  canvas.addEventListener('touchmove',e=>{e.preventDefault();draw(e);},{passive:false});
+  canvas.addEventListener('touchend',()=>drawing=false);
+}
+
+function clearSig(id){const c=document.getElementById(id);if(c)c.getContext('2d').clearRect(0,0,c.width,c.height);}
+
+// MODAL
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.overlay').forEach(m=>m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');}));
+
+// LOADING
+function showLoading(msg='Memproses...'){document.getElementById('loading').classList.add('show');document.getElementById('loading-text').textContent=msg;}
+function updateLoading(msg){document.getElementById('loading-text').textContent=msg;}
+function hideLoading(){document.getElementById('loading').classList.remove('show');}
+
+// SETUP UI
+function showStep(id){document.querySelectorAll('.step').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+function showScreen(s){
+  document.getElementById('setup-screen').style.display=s==='setup'?'flex':'none';
+  document.getElementById('login-screen').style.display=s==='login'?'flex':'none';
+  document.getElementById('app').classList.toggle('active',s==='app');
+}
+
+// HELPERS
+function mkInitials(name){return name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);}
+function fmtDate(d){
+  if(!d)return'—';
+  const[y,m,dy]=d.split('-');
+  return`${parseInt(dy)} ${'Jan Feb Mar Apr Mei Jun Jul Agu Sep Okt Nov Des'.split(' ')[parseInt(m)-1]} ${y}`;
+}
+function typeLabel(t){return{holiday:'🎉 Hari Libur',work:'💼 Pekerjaan',sick:'🤒 Back Up Sakit',leave:'📅 Back Up Cuti'}[t]||t;}
+function tbadge(t){const cls={holiday:'th',work:'tw',sick:'ts',leave:'tl'}[t]||'';return`<span class="tbadge ${cls}">${typeLabel(t)}</span>`;}
+function spill(s){const m={pending:['sp-pending','⏳ Menunggu'],approved:['sp-approved','✓ Disetujui'],rejected:['sp-rejected','✕ Ditolak']};const[c,l]=m[s]||['','—'];return`<span class="spill ${c}">${l}</span>`;}
+
+let toastT;
+function showToast(msg,type='info'){
+  const t=document.getElementById('toast');
+  t.style.background={success:'rgba(16,185,129,.15)',error:'rgba(239,68,68,.15)',warn:'rgba(245,158,11,.15)',info:'rgba(59,130,246,.15)'}[type]||'rgba(59,130,246,.15)';
+  t.textContent=msg; t.classList.add('show'); clearTimeout(toastT); toastT=setTimeout(()=>t.classList.remove('show'),3500);
+}
+
+// INIT
+document.addEventListener('DOMContentLoaded',()=>{
+  initCanvas('emp-canvas'); initCanvas('admin-canvas');
+  document.getElementById('f-date').value=new Date().toISOString().split('T')[0];
+  init();
+});
+</script>
+</body>
+</html>
